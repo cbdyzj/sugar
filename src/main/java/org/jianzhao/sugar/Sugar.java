@@ -45,6 +45,6 @@ public final class Sugar {
 
     public interface ConsumerThrowsException<T> {
 
-        void invoke(T t) throws IOException;
+        void invoke(T t) throws Exception;
     }
 }

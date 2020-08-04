@@ -10,3 +10,5 @@ var in = new ByteArrayInputStream(origin);
 var s = use(in, it -> new String(it.readAllBytes(), UTF_8));
 assertEquals("hello Ada", s);
 ```
+- JDK 11 required
+- 使用参考：[SugarTest](https://github.com/cbdyzj/sugar/blob/master/src/test/java/org/jianzhao/sugar/SugarTest.java)

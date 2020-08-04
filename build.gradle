@@ -1,16 +1,24 @@
 plugins {
-    id 'java-library'
+    id 'java'
 }
+
+group = 'org.jianzhao.sugar'
+version = '0.0.2'
 
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
-group = 'org.jianzhao.sugar'
-version = '0.0.1'
-
 repositories {
     mavenCentral()
-    maven { url = "https://jitpack.io" }
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    archiveClassifier.set('sources')
+}
+
+artifacts {
+    archives sourcesJar
 }
 
 dependencies {

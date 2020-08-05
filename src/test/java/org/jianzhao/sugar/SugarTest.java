@@ -33,7 +33,7 @@ class SugarTest {
 
     @Test
     public void testWith() {
-        with(null, t -> fail());
+        with(null, it -> fail());
 
         val list = new ArrayList<>(listOf(1, 2, 3));
         with(list, Collections::reverse);
@@ -73,7 +73,17 @@ class SugarTest {
                 mapOf("key", 2, "value", 265)
         );
         assertEquals(3, distinct(list).size());
-        assertEquals(2, distinct(list, t -> t.get("key")).size());
+        assertEquals(2, distinct(list, it -> it.get("key")).size());
+    }
+
+    @Test
+    public void testToMap() {
+        val list = listOf(
+                mapOf("key", 1, "value", 314),
+                mapOf("key", 2, "value", 159)
+        );
+        Map<Integer, Integer> map = toMap(list, it -> it.get("key"), it -> it.get("value"));
+        assertEquals(mapOf(1, 314, 2, 159), map);
     }
 
     @Test
@@ -84,7 +94,7 @@ class SugarTest {
                 mapOf("key", 2, "value", 265),
                 mapOf("key", 2, "value", 358)
         );
-        Map<Integer, List<Integer>> groupMap = groupToMap(list, t -> t.get("key"), t -> t.get("value"));
+        Map<Integer, List<Integer>> groupMap = groupToMap(list, it -> it.get("key"), it -> it.get("value"));
         assertEquals(2, groupMap.size());
         assertIterableEquals(listOf(314, 159), groupMap.get(1));
         assertIterableEquals(listOf(265, 358), groupMap.get(2));

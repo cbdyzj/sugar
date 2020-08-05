@@ -23,8 +23,12 @@ class SugarTest {
     public void testUse() throws IOException {
         byte[] origin = {104, 101, 108, 108, 111, 32, 65, 100, 97};
         val in = new ByteArrayInputStream(origin);
-        val s = use(in, it -> new String(copyToByteArray(it), UTF_8));
-        assertEquals("hello Ada", s);
+        val ref = ref();
+        use(in, it -> {
+            val bytes = copyToByteArray(it);
+            ref[0] = new String(bytes, UTF_8);
+        });
+        assertEquals("hello Ada", ref[0]);
     }
 
     @Test

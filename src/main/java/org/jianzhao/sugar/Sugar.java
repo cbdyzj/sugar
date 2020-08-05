@@ -29,6 +29,7 @@ public final class Sugar {
         System.out.printf(format, args);
     }
 
+
     @SneakyThrows
     public static <T> void with(T target, ConsumerThrowsException<? super T> block) {
         if (target == null) {
@@ -43,30 +44,30 @@ public final class Sugar {
         void invoke(T t) throws Exception;
     }
 
-    public static <T extends Closeable, R> R use(
-            T t, FunctionThrowsIOException<? super T, ? extends R> block) throws IOException {
+    public static <T extends Closeable> void use(
+            T t, ConsumerThrowsIOException<? super T> block) throws IOException {
         Objects.requireNonNull(block);
         try (T _t = t) {
-            return block.invoke(_t);
+            block.invoke(_t);
         }
     }
 
-    public static <T1 extends Closeable, T2 extends Closeable, R> R use(
-            T1 t1, T2 t2, BiFunctionThrowsIOException<? super T1, ? super T2, ? extends R> block) throws IOException {
+    public static <T1 extends Closeable, T2 extends Closeable> void use(
+            T1 t1, T2 t2, BiConsumerThrowsIOException<? super T1, ? super T2> block) throws IOException {
         Objects.requireNonNull(block);
         try (T1 _t1 = t1; T2 _t2 = t2) {
-            return block.invoke(_t1, _t2);
+            block.invoke(_t1, _t2);
         }
     }
 
-    public interface FunctionThrowsIOException<T, R> {
+    public interface ConsumerThrowsIOException<T> {
 
-        R invoke(T t) throws IOException;
+        void invoke(T t) throws IOException;
     }
 
-    public interface BiFunctionThrowsIOException<T1, T2, R> {
+    public interface BiConsumerThrowsIOException<T1, T2> {
 
-        R invoke(T1 t1, T2 t2) throws IOException;
+        void invoke(T1 t1, T2 t2) throws IOException;
     }
 
     public static boolean isEmpty(Collection<?> collection) {
@@ -276,7 +277,6 @@ public final class Sugar {
         return buildMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7, k8, v8, k9, v9, k10, v10);
     }
 
-    @SuppressWarnings("unchecked")
     private static <K, V> Map<K, V> buildMap(Object... input) {
         if ((input.length & 1) != 0) {
             throw new IllegalArgumentException("length is odd");
@@ -285,7 +285,20 @@ public final class Sugar {
         for (int i = 0; i < input.length; i += 2) {
             map.put(input[i], input[i + 1]);
         }
-        return (Map<K, V>) map;
+        return cast(map);
     }
 
+    public static <T> T[] ref(T t) {
+        Object[] ref = {t};
+        return cast(ref);
+    }
+
+    public static <T> T[] ref() {
+        return ref(null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Object o) {
+        return (T) o;
+    }
 }

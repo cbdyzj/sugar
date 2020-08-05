@@ -30,7 +30,10 @@ public final class Sugar {
     }
 
     @SneakyThrows
-    public static <T> void with(T target, ConsumerThrowsException<T> block) {
+    public static <T> void with(T target, ConsumerThrowsException<? super T> block) {
+        if (target == null) {
+            return;
+        }
         Objects.requireNonNull(block);
         block.invoke(target);
     }
@@ -40,16 +43,28 @@ public final class Sugar {
         void invoke(T t) throws Exception;
     }
 
-    public static <T extends Closeable, R> R use(T target, FunctionThrowsIOException<T, R> block) throws IOException {
+    public static <T extends Closeable, R> R use(T t, FunctionThrowsIOException<? super T, ? extends R> block) throws IOException {
         Objects.requireNonNull(block);
-        try (target) {
-            return block.invoke(target);
+        try (t) {
+            return block.invoke(t);
+        }
+    }
+
+    public static <T1 extends Closeable, T2 extends Closeable, R> R use(T1 t1, T2 t2, BiFunctionThrowsIOException<? super T1, ? super T2, ? extends R> block) throws IOException {
+        Objects.requireNonNull(block);
+        try (t1; t2) {
+            return block.invoke(t1, t2);
         }
     }
 
     public interface FunctionThrowsIOException<T, R> {
 
         R invoke(T t) throws IOException;
+    }
+
+    public interface BiFunctionThrowsIOException<T1, T2, R> {
+
+        R invoke(T1 t1, T2 t2) throws IOException;
     }
 
     public static boolean isEmpty(Collection<?> collection) {
@@ -115,11 +130,11 @@ public final class Sugar {
         return result;
     }
 
-    public static <T, K> Map<K, T> toMap(List<T> list, Function<T, K> keyMapper) {
+    public static <T, K> Map<K, T> toMap(List<T> list, Function<? super T, ? extends K> keyMapper) {
         return toMap(list, keyMapper, Function.identity());
     }
 
-    public static <T, K, V> Map<K, V> toMap(List<T> list, Function<T, K> keyMapper, Function<T, V> valueMapper) {
+    public static <T, K, V> Map<K, V> toMap(List<T> list, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
         if (isEmpty(list)) {
             return new HashMap<>();
         }

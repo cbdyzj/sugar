@@ -27,6 +27,8 @@ class SugarTest {
 
     @Test
     public void testWith() {
+        with(null, t -> fail());
+
         var list = new ArrayList<>(List.of(1, 2, 3));
         with(list, Collections::reverse);
         assertIterableEquals(List.of(3, 2, 1), list);
@@ -37,6 +39,7 @@ class SugarTest {
         var list = List.of(1, 2, 3, 4, 5);
         var sum = reduce(list, 0, Integer::sum);
         assertEquals(15, sum);
+
         var sb = reduce(list, new StringBuilder(), StringBuilder::append);
         assertEquals("12345", sb.toString());
     }

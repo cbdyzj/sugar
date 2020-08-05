@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -43,14 +44,16 @@ public final class Sugar {
         void invoke(T t) throws Exception;
     }
 
-    public static <T extends Closeable, R> R use(T t, FunctionThrowsIOException<? super T, ? extends R> block) throws IOException {
+    public static <T extends Closeable, R> R use(
+            T t, FunctionThrowsIOException<? super T, ? extends R> block) throws IOException {
         Objects.requireNonNull(block);
         try (t) {
             return block.invoke(t);
         }
     }
 
-    public static <T1 extends Closeable, T2 extends Closeable, R> R use(T1 t1, T2 t2, BiFunctionThrowsIOException<? super T1, ? super T2, ? extends R> block) throws IOException {
+    public static <T1 extends Closeable, T2 extends Closeable, R> R use(
+            T1 t1, T2 t2, BiFunctionThrowsIOException<? super T1, ? super T2, ? extends R> block) throws IOException {
         Objects.requireNonNull(block);
         try (t1; t2) {
             return block.invoke(t1, t2);
@@ -130,15 +133,34 @@ public final class Sugar {
         return result;
     }
 
-    public static <T, K> Map<K, T> toMap(List<T> list, Function<? super T, ? extends K> keyMapper) {
-        return toMap(list, keyMapper, Function.identity());
+    public static <T, K> Map<K, T> toMap(List<T> list, Function<? super T, ? extends K> keyExtractor) {
+        return toMap(list, keyExtractor, Function.identity());
     }
 
-    public static <T, K, V> Map<K, V> toMap(List<T> list, Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
+    public static <T, K, V> Map<K, V> toMap(List<T> list,
+                                            Function<? super T, ? extends K> keyExtractor,
+                                            Function<? super T, ? extends V> valueExtractor) {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
-        return list.stream().collect(Collectors.toMap(keyMapper, valueMapper));
+        return list.stream().collect(Collectors.toMap(keyExtractor, valueExtractor));
+    }
+
+    public static <T, K> Map<K, List<T>> groupToMap(List<T> list, Function<? super T, ? extends K> keyExtractor) {
+        if (isEmpty(list)) {
+            return new HashMap<>();
+        }
+        return list.stream().collect(Collectors.groupingBy(keyExtractor));
+    }
+
+    public static <T, K, V> Map<K, List<V>> groupToMap(List<T> list,
+                                                       Function<? super T, ? extends K> keyExtractor,
+                                                       Function<? super T, ? extends V> valueExtractor) {
+        if (isEmpty(list)) {
+            return new HashMap<>();
+        }
+        return list.stream().collect(
+                Collectors.groupingBy(keyExtractor, Collectors.mapping(valueExtractor, Collectors.toList())));
     }
 
     public static <T> boolean includes(List<T> list, T item) {

@@ -71,6 +71,20 @@ class SugarTest {
     }
 
     @Test
+    public void testGroupToMap() {
+        var list = List.of(
+                Map.of("key", 1, "value", 314),
+                Map.of("key", 1, "value", 159),
+                Map.of("key", 2, "value", 265),
+                Map.of("key", 2, "value", 358)
+        );
+        var groupMap = groupToMap(list, t -> t.get("key"), t -> t.get("value"));
+        assertEquals(2, groupMap.size());
+        assertIterableEquals(List.of(314, 159), groupMap.get(1));
+        assertIterableEquals(List.of(265, 358), groupMap.get(2));
+    }
+
+    @Test
     public void testIncludes() {
         var list = List.of(3, 1, 4, 1, 5, 9, 2, 6);
         assertTrue(includes(list, 3));

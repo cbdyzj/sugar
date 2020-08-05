@@ -82,6 +82,7 @@ public final class Sugar {
     }
 
     public static <T> List<T> distinct(List<T> list, Function<? super T, ?> keyExtractor) {
+        Objects.requireNonNull(keyExtractor);
         var seen = new HashSet<>();
         return filter(list, t -> {
             var key = keyExtractor.apply(t);
@@ -134,6 +135,7 @@ public final class Sugar {
     }
 
     public static <T, K> Map<K, T> toMap(List<T> list, Function<? super T, ? extends K> keyExtractor) {
+        Objects.requireNonNull(keyExtractor);
         return toMap(list, keyExtractor, Function.identity());
     }
 
@@ -143,6 +145,8 @@ public final class Sugar {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
+        Objects.requireNonNull(keyExtractor);
+        Objects.requireNonNull(valueExtractor);
         return list.stream().collect(Collectors.toMap(keyExtractor, valueExtractor));
     }
 
@@ -150,6 +154,7 @@ public final class Sugar {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
+        Objects.requireNonNull(keyExtractor);
         return list.stream().collect(Collectors.groupingBy(keyExtractor));
     }
 
@@ -159,6 +164,8 @@ public final class Sugar {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
+        Objects.requireNonNull(keyExtractor);
+        Objects.requireNonNull(valueExtractor);
         return list.stream().collect(
                 Collectors.groupingBy(keyExtractor, Collectors.mapping(valueExtractor, Collectors.toList())));
     }

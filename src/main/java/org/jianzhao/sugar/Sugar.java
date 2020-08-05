@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -47,16 +46,16 @@ public final class Sugar {
     public static <T extends Closeable, R> R use(
             T t, FunctionThrowsIOException<? super T, ? extends R> block) throws IOException {
         Objects.requireNonNull(block);
-        try (t) {
-            return block.invoke(t);
+        try (T _t = t) {
+            return block.invoke(_t);
         }
     }
 
     public static <T1 extends Closeable, T2 extends Closeable, R> R use(
             T1 t1, T2 t2, BiFunctionThrowsIOException<? super T1, ? super T2, ? extends R> block) throws IOException {
         Objects.requireNonNull(block);
-        try (t1; t2) {
-            return block.invoke(t1, t2);
+        try (T1 _t1 = t1; T2 _t2 = t2) {
+            return block.invoke(_t1, _t2);
         }
     }
 
@@ -83,9 +82,9 @@ public final class Sugar {
 
     public static <T> List<T> distinct(List<T> list, Function<? super T, ?> keyExtractor) {
         Objects.requireNonNull(keyExtractor);
-        var seen = new HashSet<>();
+        Set<Object> seen = new HashSet<>();
         return filter(list, t -> {
-            var key = keyExtractor.apply(t);
+            Object key = keyExtractor.apply(t);
             if (seen.contains(key)) {
                 return false;
             }
@@ -179,6 +178,114 @@ public final class Sugar {
             return false;
         }
         return list.stream().anyMatch(predicate);
+    }
+
+    @SafeVarargs
+    public static <T> List<T> listOf(T... ts) {
+        return new ArrayList<>(Arrays.asList(ts));
+    }
+
+    @SafeVarargs
+    public static <T> Set<T> setOf(T... ts) {
+        return new HashSet<>(Arrays.asList(ts));
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k, V v) {
+        return buildMap(k, v);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2) {
+        return buildMap(k1, v1, k2, v2);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3) {
+        return buildMap(k1, v1, k2, v2, k3, v3);
+    }
+
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3,
+                                         K k4, V v4) {
+        return buildMap(k1, v1, k2, v2, k3, v3, k4, v4);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3,
+                                         K k4, V v4,
+                                         K k5, V v5) {
+        return buildMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3,
+                                         K k4, V v4,
+                                         K k5, V v5,
+                                         K k6, V v6) {
+        return buildMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3,
+                                         K k4, V v4,
+                                         K k5, V v5,
+                                         K k6, V v6,
+                                         K k7, V v7) {
+        return buildMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3,
+                                         K k4, V v4,
+                                         K k5, V v5,
+                                         K k6, V v6,
+                                         K k7, V v7,
+                                         K k8, V v8) {
+        return buildMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7, k8, v8);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3,
+                                         K k4, V v4,
+                                         K k5, V v5,
+                                         K k6, V v6,
+                                         K k7, V v7,
+                                         K k8, V v8,
+                                         K k9, V v9) {
+        return buildMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7, k8, v8, k9, v9);
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1,
+                                         K k2, V v2,
+                                         K k3, V v3,
+                                         K k4, V v4,
+                                         K k5, V v5,
+                                         K k6, V v6,
+                                         K k7, V v7,
+                                         K k8, V v8,
+                                         K k9, V v9,
+                                         K k10, V v10) {
+        return buildMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7, k8, v8, k9, v9, k10, v10);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K, V> Map<K, V> buildMap(Object... input) {
+        if ((input.length & 1) != 0) {
+            throw new IllegalArgumentException("length is odd");
+        }
+        Map<Object, Object> map = new HashMap<>();
+        for (int i = 0; i < input.length; i += 2) {
+            map.put(input[i], input[i + 1]);
+        }
+        return (Map<K, V>) map;
     }
 
 }

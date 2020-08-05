@@ -1,5 +1,6 @@
 package org.jianzhao.sugar;
 
+import lombok.val;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -14,14 +15,15 @@ import java.util.stream.Stream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jianzhao.sugar.Sugar.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.util.StreamUtils.copyToByteArray;
 
 class SugarTest {
 
     @Test
     public void testUse() throws IOException {
         byte[] origin = {104, 101, 108, 108, 111, 32, 65, 100, 97};
-        var in = new ByteArrayInputStream(origin);
-        var s = use(in, it -> new String(it.readAllBytes(), UTF_8));
+        val in = new ByteArrayInputStream(origin);
+        val s = use(in, it -> new String(copyToByteArray(it), UTF_8));
         assertEquals("hello Ada", s);
     }
 
@@ -29,42 +31,42 @@ class SugarTest {
     public void testWith() {
         with(null, t -> fail());
 
-        var list = new ArrayList<>(List.of(1, 2, 3));
+        val list = new ArrayList<>(listOf(1, 2, 3));
         with(list, Collections::reverse);
-        assertIterableEquals(List.of(3, 2, 1), list);
+        assertIterableEquals(listOf(3, 2, 1), list);
     }
 
     @Test
     public void testReduce() {
-        var list = List.of(1, 2, 3, 4, 5);
-        var sum = reduce(list, 0, Integer::sum);
+        val list = listOf(1, 2, 3, 4, 5);
+        val sum = reduce(list, 0, Integer::sum);
         assertEquals(15, sum);
 
-        var sb = reduce(list, new StringBuilder(), StringBuilder::append);
+        val sb = reduce(list, new StringBuilder(), StringBuilder::append);
         assertEquals("12345", sb.toString());
     }
 
     @Test
     public void testMap() {
-        var list = List.of(3, 1, 4, 1, 5);
-        assertIterableEquals(List.of("3", "1", "4", "1", "5"), map(list, String::valueOf));
+        val list = listOf(3, 1, 4, 1, 5);
+        assertIterableEquals(listOf("3", "1", "4", "1", "5"), map(list, String::valueOf));
     }
 
     @Test
     public void testPartition() {
-        var list = Stream.generate(Object::new).limit(10).collect(Collectors.toList());
-        var partitionList = partition(list, 3);
+        val list = Stream.generate(Object::new).limit(10).collect(Collectors.toList());
+        val partitionList = partition(list, 3);
         assertEquals(4, partitionList.size());
         assertThrows(IllegalArgumentException.class, () -> partition(list, 0));
     }
 
     @Test
     public void testDistinct() {
-        var list = List.of(
-                Map.of("key", 1, "value", 314),
-                Map.of("key", 1, "value", 159),
-                Map.of("key", 2, "value", 265),
-                Map.of("key", 2, "value", 265)
+        val list = listOf(
+                mapOf("key", 1, "value", 314),
+                mapOf("key", 1, "value", 159),
+                mapOf("key", 2, "value", 265),
+                mapOf("key", 2, "value", 265)
         );
         assertEquals(3, distinct(list).size());
         assertEquals(2, distinct(list, t -> t.get("key")).size());
@@ -72,21 +74,21 @@ class SugarTest {
 
     @Test
     public void testGroupToMap() {
-        var list = List.of(
-                Map.of("key", 1, "value", 314),
-                Map.of("key", 1, "value", 159),
-                Map.of("key", 2, "value", 265),
-                Map.of("key", 2, "value", 358)
+        val list = listOf(
+                mapOf("key", 1, "value", 314),
+                mapOf("key", 1, "value", 159),
+                mapOf("key", 2, "value", 265),
+                mapOf("key", 2, "value", 358)
         );
-        var groupMap = groupToMap(list, t -> t.get("key"), t -> t.get("value"));
+        Map<Integer, List<Integer>> groupMap = groupToMap(list, t -> t.get("key"), t -> t.get("value"));
         assertEquals(2, groupMap.size());
-        assertIterableEquals(List.of(314, 159), groupMap.get(1));
-        assertIterableEquals(List.of(265, 358), groupMap.get(2));
+        assertIterableEquals(listOf(314, 159), groupMap.get(1));
+        assertIterableEquals(listOf(265, 358), groupMap.get(2));
     }
 
     @Test
     public void testIncludes() {
-        var list = List.of(3, 1, 4, 1, 5, 9, 2, 6);
+        val list = listOf(3, 1, 4, 1, 5, 9, 2, 6);
         assertTrue(includes(list, 3));
         assertFalse(includes(list, 7));
     }

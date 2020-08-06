@@ -2,13 +2,11 @@ package org.jianzhao.sugar;
 
 import lombok.val;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.TypeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.util.StreamUtils.copyToByteArray;
 
 class SugarTest {
+
+    @Test
+    public void testPrintln() {
+        // 👋 System.out.println();
+        println("hello world");
+    }
 
     @Test
     public void testUse() throws IOException {
@@ -67,37 +71,37 @@ class SugarTest {
     @Test
     public void testDistinct() {
         val list = listOf(
-                mapOf("key", 1, "value", 314),
-                mapOf("key", 1, "value", 159),
-                mapOf("key", 2, "value", 265),
-                mapOf("key", 2, "value", 265)
+                Foobar.of("a", "A"),
+                Foobar.of("a", "AA"),
+                Foobar.of("b", "B"),
+                Foobar.of("b", "B")
         );
         assertEquals(3, distinct(list).size());
-        assertEquals(2, distinct(list, it -> it.get("key")).size());
+        assertEquals(2, distinct(list, Foobar::getFoo).size());
     }
 
     @Test
     public void testToMap() {
         val list = listOf(
-                mapOf("key", 1, "value", 314),
-                mapOf("key", 2, "value", 159)
+                Foobar.of("a", "A"),
+                Foobar.of("b", "B")
         );
-        Map<Integer, Integer> map = toMap(list, it -> it.get("key"), it -> it.get("value"));
-        assertEquals(mapOf(1, 314, 2, 159), map);
+        val map = toMap(list, Foobar::getFoo, Foobar::getBar);
+        assertEquals(mapOf("a", "A", "b", "B"), map);
     }
 
     @Test
     public void testGroupToMap() {
         val list = listOf(
-                mapOf("key", 1, "value", 314),
-                mapOf("key", 1, "value", 159),
-                mapOf("key", 2, "value", 265),
-                mapOf("key", 2, "value", 358)
+                Foobar.of("a", "A"),
+                Foobar.of("a", "AA"),
+                Foobar.of("b", "B"),
+                Foobar.of("b", "B")
         );
-        Map<Integer, List<Integer>> groupMap = groupToMap(list, it -> it.get("key"), it -> it.get("value"));
+        val groupMap = groupToMap(list, Foobar::getFoo, Foobar::getBar);
         assertEquals(2, groupMap.size());
-        assertIterableEquals(listOf(314, 159), groupMap.get(1));
-        assertIterableEquals(listOf(265, 358), groupMap.get(2));
+        assertIterableEquals(listOf("A", "AA"), groupMap.get("a"));
+        assertIterableEquals(listOf("B", "BB"), groupMap.get("b"));
     }
 
     @Test
@@ -105,5 +109,16 @@ class SugarTest {
         val list = listOf(3, 1, 4, 1, 5, 9, 2, 6);
         assertTrue(includes(list, 3));
         assertFalse(includes(list, 7));
+    }
+
+    @Test
+    public void testCollectionShortcut() {
+        List<Map<String, Set<Foobar>>> c = listOf(
+                mapOf("1", setOf(Foobar.of("a", "A"), Foobar.of("b", "B"))),
+                mapOf("2", setOf(Foobar.of("c", "C")), "3", setOf(Foobar.of("d", "D"))),
+                mapOf("4", setOf()),
+                mapOf()
+        );
+        assertTrue(c.get(1).get("2").contains(Foobar.of("c", "C")));
     }
 }

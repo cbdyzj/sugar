@@ -191,6 +191,10 @@ public final class Sugar {
         return new HashSet<>(Arrays.asList(ts));
     }
 
+    public static <K, V> Map<K, V> mapOf() {
+        return new HashMap<>();
+    }
+
     public static <K, V> Map<K, V> mapOf(K k, V v) {
         return buildMap(k, v);
     }

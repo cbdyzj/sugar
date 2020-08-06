@@ -1,8 +1,8 @@
 package org.jianzhao.sugar;
 
 import lombok.val;
+import org.jianzhao.sugar.support.Pair;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.TypeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -71,34 +71,34 @@ class SugarTest {
     @Test
     public void testDistinct() {
         val list = listOf(
-                Foobar.of("a", "A"),
-                Foobar.of("a", "AA"),
-                Foobar.of("b", "B"),
-                Foobar.of("b", "B")
+                Pair.of("a", "A"),
+                Pair.of("a", "AA"),
+                Pair.of("b", "B"),
+                Pair.of("b", "B")
         );
         assertEquals(3, distinct(list).size());
-        assertEquals(2, distinct(list, Foobar::getFoo).size());
+        assertEquals(2, distinct(list, Pair::getKey).size());
     }
 
     @Test
     public void testToMap() {
         val list = listOf(
-                Foobar.of("a", "A"),
-                Foobar.of("b", "B")
+                Pair.of("a", "A"),
+                Pair.of("b", "B")
         );
-        val map = toMap(list, Foobar::getFoo, Foobar::getBar);
+        val map = toMap(list, Pair::getKey, Pair::getValue);
         assertEquals(mapOf("a", "A", "b", "B"), map);
     }
 
     @Test
     public void testGroupToMap() {
         val list = listOf(
-                Foobar.of("a", "A"),
-                Foobar.of("a", "AA"),
-                Foobar.of("b", "B"),
-                Foobar.of("b", "BB")
+                Pair.of("a", "A"),
+                Pair.of("a", "AA"),
+                Pair.of("b", "B"),
+                Pair.of("b", "BB")
         );
-        val groupMap = groupToMap(list, Foobar::getFoo, Foobar::getBar);
+        val groupMap = groupToMap(list, Pair::getKey, Pair::getValue);
         assertEquals(2, groupMap.size());
         assertIterableEquals(listOf("A", "AA"), groupMap.get("a"));
         assertIterableEquals(listOf("B", "BB"), groupMap.get("b"));
@@ -113,12 +113,12 @@ class SugarTest {
 
     @Test
     public void testCollectionShortcut() {
-        List<Map<String, Set<Foobar>>> c = listOf(
-                mapOf("1", setOf(Foobar.of("a", "A"), Foobar.of("b", "B"))),
-                mapOf("2", setOf(Foobar.of("c", "C")), "3", setOf(Foobar.of("d", "D"))),
+        List<Map<String, Set<Pair<String, String>>>> c = listOf(
+                mapOf("1", setOf(Pair.of("a", "A"), Pair.of("b", "B"))),
+                mapOf("2", setOf(Pair.of("c", "C")), "3", setOf(Pair.of("d", "D"))),
                 mapOf("4", setOf()),
                 mapOf()
         );
-        assertTrue(c.get(1).get("2").contains(Foobar.of("c", "C")));
+        assertTrue(c.get(1).get("2").contains(Pair.of("c", "C")));
     }
 }

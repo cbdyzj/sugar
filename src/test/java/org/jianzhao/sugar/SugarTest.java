@@ -96,7 +96,7 @@ class SugarTest {
                 Foobar.of("a", "A"),
                 Foobar.of("a", "AA"),
                 Foobar.of("b", "B"),
-                Foobar.of("b", "B")
+                Foobar.of("b", "BB")
         );
         val groupMap = groupToMap(list, Foobar::getFoo, Foobar::getBar);
         assertEquals(2, groupMap.size());

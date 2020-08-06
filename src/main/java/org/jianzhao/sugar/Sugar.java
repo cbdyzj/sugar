@@ -29,19 +29,27 @@ public final class Sugar {
         System.out.printf(format, args);
     }
 
-
     @SneakyThrows
-    public static <T> void with(T target, ConsumerThrowsException<? super T> block) {
-        if (target == null) {
-            return;
-        }
+    public static void with(ActionThrowsException block) {
         Objects.requireNonNull(block);
-        block.invoke(target);
+        block.invoke();
     }
 
-    public interface ConsumerThrowsException<T> {
+    @SneakyThrows
+    public static <R> R with(SupplierThrowsException<R> block) {
+        Objects.requireNonNull(block);
+        return block.invoke();
+    }
 
-        void invoke(T t) throws Exception;
+    public interface ActionThrowsException {
+
+        void invoke() throws Exception;
+    }
+
+
+    public interface SupplierThrowsException<R> {
+
+        R invoke() throws Exception;
     }
 
     public static <T extends Closeable> void use(

@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,11 +39,14 @@ class SugarTest {
 
     @Test
     public void testWith() {
-        with(null, it -> fail());
+        val clazz = with(() -> Class.forName("org.jianzhao.sugar.Sugar"));
+        assertEquals(Sugar.class, clazz);
+        // Sneaky throws exception
+        assertThrows(IOException.class, () -> with(SugarTest::throwIOException));
+    }
 
-        val list = new ArrayList<>(listOf(1, 2, 3));
-        with(list, Collections::reverse);
-        assertIterableEquals(listOf(3, 2, 1), list);
+    private static void throwIOException() throws IOException {
+        throw new IOException("Dummy IOException");
     }
 
     @Test
@@ -49,7 +54,7 @@ class SugarTest {
         val list = listOf(1, 2, 3, 4, 5);
         val sum = reduce(list, 0, Integer::sum);
         assertEquals(15, sum);
-
+        // Another test case
         val sb = reduce(list, new StringBuilder(), StringBuilder::append);
         assertEquals("12345", sb.toString());
     }

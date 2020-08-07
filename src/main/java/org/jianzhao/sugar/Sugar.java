@@ -3,8 +3,9 @@ package org.jianzhao.sugar;
 import lombok.SneakyThrows;
 
 import java.io.Closeable;
-import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -30,52 +31,72 @@ public final class Sugar {
     }
 
     @SneakyThrows
-    public static void with(ActionThrowsException block) {
+    public static void with(ATE block) {
         Objects.requireNonNull(block);
         block.invoke();
     }
 
     @SneakyThrows
-    public static <R> R with(SupplierThrowsException<R> block) {
+    public static <R> R with(STE<? extends R> block) {
         Objects.requireNonNull(block);
         return block.invoke();
     }
 
-    public interface ActionThrowsException {
+    /* With resource */
 
-        void invoke() throws Exception;
-    }
-
-
-    public interface SupplierThrowsException<R> {
-
-        R invoke() throws Exception;
-    }
-
-    public static <T extends Closeable> void use(
-            T t, ConsumerThrowsIOException<? super T> block) throws IOException {
+    @SneakyThrows
+    public static <T extends Closeable> void with(T t, ATE block) {
         Objects.requireNonNull(block);
         try (T _t = t) {
-            block.invoke(_t);
+            block.invoke();
         }
     }
 
-    public static <T1 extends Closeable, T2 extends Closeable> void use(
-            T1 t1, T2 t2, BiConsumerThrowsIOException<? super T1, ? super T2> block) throws IOException {
+    @SneakyThrows
+    public static <T extends Closeable, R> R with(T t, STE<? extends R> block) {
+        Objects.requireNonNull(block);
+        try (T _t = t) {
+            return block.invoke();
+        }
+    }
+
+    @SneakyThrows
+    public static <T1 extends Closeable, T2 extends Closeable> void with(T1 t1, T2 t2, ATE block) {
         Objects.requireNonNull(block);
         try (T1 _t1 = t1; T2 _t2 = t2) {
-            block.invoke(_t1, _t2);
+            block.invoke();
         }
     }
 
-    public interface ConsumerThrowsIOException<T> {
-
-        void invoke(T t) throws IOException;
+    @SneakyThrows
+    public static <T1 extends Closeable, T2 extends Closeable, R> R with(T1 t1, T2 t2, STE<? extends R> block) {
+        Objects.requireNonNull(block);
+        try (T1 _t1 = t1; T2 _t2 = t2) {
+            return block.invoke();
+        }
     }
 
-    public interface BiConsumerThrowsIOException<T1, T2> {
+    /* With lock */
 
-        void invoke(T1 t1, T2 t2) throws IOException;
+    @SneakyThrows
+    public static <L extends Lock> void with(L l, ATE block) {
+        Objects.requireNonNull(block);
+        l.lock();
+        try {
+            block.invoke();
+        } finally {
+            l.unlock();
+        }
+    }
+
+    @SneakyThrows
+    public static <L extends Lock, R> R with(L l, STE<? extends R> block) {
+        l.lock();
+        try {
+            return block.invoke();
+        } finally {
+            l.unlock();
+        }
     }
 
     public static boolean isEmpty(Collection<?> collection) {
@@ -301,16 +322,47 @@ public final class Sugar {
     }
 
     public static <T> T[] ref(T t) {
-        Object[] ref = {t};
-        return cast(ref);
+        Objects.requireNonNull(t);
+        T[] ref = cast(Array.newInstance(t.getClass(), 1));
+        ref[0] = t;
+        return ref;
     }
 
-    public static <T> T[] ref() {
-        return ref(null);
+    public static Object[] ref() {
+        return new Object[]{null};
     }
 
     @SuppressWarnings("unchecked")
     public static <T> T cast(Object o) {
         return (T) o;
+    }
+
+    /**
+     * ActionThrowsException
+     */
+    public interface ATE {
+
+        void invoke() throws Exception;
+    }
+
+    /**
+     * SupplierThrowsException
+     *
+     * @param <R> return value type
+     */
+    public interface STE<R> {
+
+        R invoke() throws Exception;
+    }
+
+    @SneakyThrows
+    public static void repeat(int times, ATE block) {
+        if (times <= 0) {
+            throw new IllegalArgumentException("times requires positive integer");
+        }
+        Objects.requireNonNull(block);
+        for (int i = 0; i < times; i++) {
+            block.invoke();
+        }
     }
 }

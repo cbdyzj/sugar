@@ -6,13 +6,16 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jianzhao.sugar.Sugar.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.util.StreamUtils.copyToByteArray;
@@ -26,27 +29,49 @@ class SugarTest {
     }
 
     @Test
-    public void testUse() throws IOException {
-        byte[] origin = {104, 101, 108, 108, 111, 32, 65, 100, 97};
-        val in = new ByteArrayInputStream(origin);
-        val ref = ref();
-        use(in, it -> {
-            val bytes = copyToByteArray(it);
-            ref[0] = new String(bytes, UTF_8);
-        });
-        assertEquals("hello Ada", ref[0]);
+    public void testWith() {
+        assertThrows(IOException.class, () -> with((ATE) () -> {
+            throw new IOException("Dummy IOException");
+        }));
     }
 
     @Test
-    public void testWith() {
-        val clazz = with(() -> Class.forName("org.jianzhao.sugar.Sugar"));
-        assertEquals(Sugar.class, clazz);
-        // Sneaky throws exception
-        assertThrows(IOException.class, () -> with(SugarTest::throwIOException));
+    public void testWithResource() {
+        // "hello Ada" bytes
+        byte[] origin = {104, 101, 108, 108, 111, 32, 65, 100, 97};
+        val closed = ref(false);
+        val in = new ByteArrayInputStream(origin) {
+            @Override
+            public void close() throws IOException {
+                super.close();
+                closed[0] = true;
+            }
+        };
+        val s = with(in, () -> {
+            val bytes = copyToByteArray(in);
+            val utf8 = "utf8";
+            return new String(bytes, Charset.forName(utf8));
+        });
+        assertTrue(closed[0]);
+        assertEquals("hello Ada", s);
     }
 
-    private static void throwIOException() throws IOException {
-        throw new IOException("Dummy IOException");
+    @Test
+    public void testWithLock() {
+        val nTask = 8;
+        val cdl = new CountDownLatch(nTask);
+        val ref = ref(0);
+        val task = (Runnable) () -> {
+            repeat(10000, () -> ref[0]++);
+            cdl.countDown();
+        };
+        val lock = new ReentrantLock();
+        val taskWithLock = (Runnable) () -> with(lock, task::run);
+        val pool = Executors.newFixedThreadPool(4);
+        repeat(nTask, () -> pool.submit(taskWithLock));
+        with((ATE) cdl::await);
+        pool.shutdown();
+        assertEquals(10000 * nTask, ref[0]);
     }
 
     @Test

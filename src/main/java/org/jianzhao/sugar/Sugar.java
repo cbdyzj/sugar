@@ -7,6 +7,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,21 +32,16 @@ public final class Sugar {
     }
 
     @SneakyThrows
-    public static void with(ATE block) {
+    public static <T> void with(T target, CTE<T> block) {
+        if (target == null) {
+            return;
+        }
         Objects.requireNonNull(block);
-        block.invoke();
+        block.invoke(target);
     }
 
     @SneakyThrows
-    public static <R> R with(STE<? extends R> block) {
-        Objects.requireNonNull(block);
-        return block.invoke();
-    }
-
-    /* With resource */
-
-    @SneakyThrows
-    public static <T extends Closeable> void with(T t, ATE block) {
+    public static <T extends Closeable> void use(T t, ATE block) {
         Objects.requireNonNull(block);
         try (T _t = t) {
             block.invoke();
@@ -53,15 +49,7 @@ public final class Sugar {
     }
 
     @SneakyThrows
-    public static <T extends Closeable, R> R with(T t, STE<? extends R> block) {
-        Objects.requireNonNull(block);
-        try (T _t = t) {
-            return block.invoke();
-        }
-    }
-
-    @SneakyThrows
-    public static <T1 extends Closeable, T2 extends Closeable> void with(T1 t1, T2 t2, ATE block) {
+    public static <T1 extends Closeable, T2 extends Closeable> void use(T1 t1, T2 t2, ATE block) {
         Objects.requireNonNull(block);
         try (T1 _t1 = t1; T2 _t2 = t2) {
             block.invoke();
@@ -69,31 +57,11 @@ public final class Sugar {
     }
 
     @SneakyThrows
-    public static <T1 extends Closeable, T2 extends Closeable, R> R with(T1 t1, T2 t2, STE<? extends R> block) {
-        Objects.requireNonNull(block);
-        try (T1 _t1 = t1; T2 _t2 = t2) {
-            return block.invoke();
-        }
-    }
-
-    /* With lock */
-
-    @SneakyThrows
-    public static <L extends Lock> void with(L l, ATE block) {
+    public static <L extends Lock> void use(L l, ATE block) {
         Objects.requireNonNull(block);
         l.lock();
         try {
             block.invoke();
-        } finally {
-            l.unlock();
-        }
-    }
-
-    @SneakyThrows
-    public static <L extends Lock, R> R with(L l, STE<? extends R> block) {
-        l.lock();
-        try {
-            return block.invoke();
         } finally {
             l.unlock();
         }
@@ -108,6 +76,13 @@ public final class Sugar {
             return new ArrayList<>();
         }
         return list.stream().map(mapper).collect(Collectors.toList());
+    }
+
+    public static <T> void forEach(List<T> list, Consumer<? super T> action) {
+        if (isEmpty(list)) {
+            return;
+        }
+        list.forEach(action);
     }
 
     public static <T> List<T> distinct(List<T> list, Function<? super T, ?> keyExtractor) {
@@ -346,13 +321,11 @@ public final class Sugar {
     }
 
     /**
-     * SupplierThrowsException
-     *
-     * @param <R> return value type
+     * ConsumerThrowsException
      */
-    public interface STE<R> {
+    public interface CTE<T> {
 
-        R invoke() throws Exception;
+        void invoke(T target) throws Exception;
     }
 
     @SneakyThrows

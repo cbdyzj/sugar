@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,13 +31,11 @@ class SugarTest {
 
     @Test
     public void testWith() {
-        assertThrows(IOException.class, () -> with((ATE) () -> {
-            throw new IOException("Dummy IOException");
-        }));
+        with(null, it -> fail());
     }
 
     @Test
-    public void testWithResource() {
+    public void testUseResource() {
         // "hello Ada" bytes
         byte[] origin = {104, 101, 108, 108, 111, 32, 65, 100, 97};
         val closed = ref(false);
@@ -47,17 +46,18 @@ class SugarTest {
                 closed[0] = true;
             }
         };
-        val s = with(in, () -> {
+        val string = ref();
+        use(in, () -> {
             val bytes = copyToByteArray(in);
             val utf8 = "utf8";
-            return new String(bytes, Charset.forName(utf8));
+            string[0] = new String(bytes, Charset.forName(utf8));
         });
         assertTrue(closed[0]);
-        assertEquals("hello Ada", s);
+        assertEquals("hello Ada", string[0]);
     }
 
     @Test
-    public void testWithLock() {
+    public void testUseLock() throws InterruptedException {
         val nTask = 8;
         val cdl = new CountDownLatch(nTask);
         val ref = ref(0);
@@ -66,10 +66,10 @@ class SugarTest {
             cdl.countDown();
         };
         val lock = new ReentrantLock();
-        val taskWithLock = (Runnable) () -> with(lock, task::run);
+        val taskWithLock = (Runnable) () -> use(lock, task::run);
         val pool = Executors.newFixedThreadPool(4);
         repeat(nTask, () -> pool.submit(taskWithLock));
-        with((ATE) cdl::await);
+        cdl.await();
         pool.shutdown();
         assertEquals(10000 * nTask, ref[0]);
     }
@@ -139,6 +139,7 @@ class SugarTest {
         val list = listOf(3, 1, 4, 1, 5, 9, 2, 6);
         assertTrue(includes(list, 3));
         assertFalse(includes(list, 7));
+        assertFalse(includes(list, (Predicate<Integer>) it -> it < 0));
     }
 
     @Test

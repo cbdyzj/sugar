@@ -4,7 +4,6 @@ plugins {
 }
 
 group = 'org.jianzhao.sugar'
-version = '0.1.8'
 
 sourceCompatibility = '8'
 targetCompatibility = '8'

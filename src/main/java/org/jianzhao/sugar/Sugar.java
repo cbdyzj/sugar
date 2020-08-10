@@ -85,6 +85,21 @@ public final class Sugar {
         list.forEach(action);
     }
 
+    public static <T> T findFirst(List<T> list, Predicate<? super T> predicate) {
+        List<T> filtered = filter(list, predicate);
+        if (isEmpty(filtered)) {
+            return null;
+        }
+        return filtered.get(0);
+    }
+
+    public static <T> boolean every(List<T> list, Predicate<? super T> predicate) {
+        if (isEmpty(list)) {
+            return false;
+        }
+        return list.stream().allMatch(predicate);
+    }
+
     public static <T> List<T> distinct(List<T> list, Function<? super T, ?> keyExtractor) {
         Objects.requireNonNull(keyExtractor);
         Set<Object> seen = new HashSet<>();
@@ -172,10 +187,6 @@ public final class Sugar {
         Objects.requireNonNull(valueExtractor);
         return list.stream().collect(
                 Collectors.groupingBy(keyExtractor, Collectors.mapping(valueExtractor, Collectors.toList())));
-    }
-
-    public static <T> boolean includes(List<T> list, T item) {
-        return includes(list, Predicate.isEqual(item));
     }
 
     public static <T> boolean includes(List<T> list, Predicate<? super T> predicate) {

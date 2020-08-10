@@ -137,9 +137,8 @@ class SugarTest {
     @Test
     public void testIncludes() {
         val list = listOf(3, 1, 4, 1, 5, 9, 2, 6);
-        assertTrue(includes(list, 3));
-        assertFalse(includes(list, 7));
-        assertFalse(includes(list, (Predicate<Integer>) it -> it < 0));
+        assertTrue(includes(list, Predicate.isEqual(5)));
+        assertFalse(includes(list, it -> it < 0));
     }
 
     @Test
@@ -151,5 +150,18 @@ class SugarTest {
                 mapOf()
         );
         assertTrue(c.get(1).get("2").contains(Pair.of("c", "C")));
+    }
+
+    @Test
+    public void testEvery() {
+        val list = listOf(3, 1, 4, 1, 5, 9);
+        assertTrue(every(list, it -> it > 0));
+    }
+
+    @Test
+    public void testFindFirst() {
+        val list = listOf(3, 1, 4, 1, 5, 9);
+        val first = findFirst(list, it -> it > 3);
+        assertEquals(4, first);
     }
 }

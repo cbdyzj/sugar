@@ -7,9 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
@@ -163,5 +161,16 @@ class SugarTest {
         val list = listOf(3, 1, 4, 1, 5, 9);
         val first = findFirst(list, it -> it > 3);
         assertEquals(4, first);
+    }
+
+    @Test
+    public void testToList() {
+        val ref = ref(1);
+        val iterable = (Iterable<Integer>) () -> Stream.generate(() -> ref[0]++).limit(5).iterator();
+        val list = toList(iterable);
+        assertIterableEquals(listOf(1, 2, 3, 4, 5), list);
+        val array = new String[]{"a", "b", "c", "d", "e"};
+        val strings = toList(array);
+        assertIterableEquals(listOf("a", "b", "c", "d", "e"), strings);
     }
 }

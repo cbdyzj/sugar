@@ -169,8 +169,5 @@ class SugarTest {
         val iterable = (Iterable<Integer>) () -> Stream.generate(() -> ref[0]++).limit(5).iterator();
         val list = toList(iterable);
         assertIterableEquals(listOf(1, 2, 3, 4, 5), list);
-        val array = new String[]{"a", "b", "c", "d", "e"};
-        val strings = toList(array);
-        assertIterableEquals(listOf("a", "b", "c", "d", "e"), strings);
     }
 }

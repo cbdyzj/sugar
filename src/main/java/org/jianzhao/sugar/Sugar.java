@@ -77,13 +77,6 @@ public final class Sugar {
         return list;
     }
 
-    public static <T> List<T> toList(T[] array) {
-        if (array == null || array.length == 0) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(Arrays.asList(array));
-    }
-
     public static <T, R> List<R> map(List<T> list, Function<? super T, ? extends R> mapper) {
         if (isEmpty(list)) {
             return new ArrayList<>();

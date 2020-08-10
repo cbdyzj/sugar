@@ -86,11 +86,11 @@ public final class Sugar {
     }
 
     public static <T> T findFirst(List<T> list, Predicate<? super T> predicate) {
-        List<T> filtered = filter(list, predicate);
-        if (isEmpty(filtered)) {
+        if (isEmpty(list)) {
             return null;
         }
-        return filtered.get(0);
+        Optional<T> ot = list.stream().filter(predicate).findFirst();
+        return ot.orElse(null);
     }
 
     public static <T> boolean every(List<T> list, Predicate<? super T> predicate) {

@@ -77,21 +77,21 @@ public final class Sugar {
         return list;
     }
 
-    public static <T, R> List<R> map(List<T> list, Function<? super T, ? extends R> mapper) {
+    public static <T, R> List<R> map(Collection<T> list, Function<? super T, ? extends R> mapper) {
         if (isEmpty(list)) {
             return new ArrayList<>();
         }
         return list.stream().map(mapper).collect(Collectors.toList());
     }
 
-    public static <T> void forEach(List<T> list, Consumer<? super T> action) {
+    public static <T> void forEach(Collection<T> list, Consumer<? super T> action) {
         if (isEmpty(list)) {
             return;
         }
         list.forEach(action);
     }
 
-    public static <T> T findFirst(List<T> list, Predicate<? super T> predicate) {
+    public static <T> T findFirst(Collection<T> list, Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return null;
         }
@@ -99,14 +99,14 @@ public final class Sugar {
         return ot.orElse(null);
     }
 
-    public static <T> boolean every(List<T> list, Predicate<? super T> predicate) {
+    public static <T> boolean every(Collection<T> list, Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return false;
         }
         return list.stream().allMatch(predicate);
     }
 
-    public static <T> List<T> distinct(List<T> list, Function<? super T, ?> keyExtractor) {
+    public static <T> List<T> distinct(Collection<T> list, Function<? super T, ?> keyExtractor) {
         Objects.requireNonNull(keyExtractor);
         Set<Object> seen = new HashSet<>();
         return filter(list, t -> {
@@ -119,21 +119,21 @@ public final class Sugar {
         });
     }
 
-    public static <T> List<T> distinct(List<T> list) {
+    public static <T> List<T> distinct(Collection<T> list) {
         if (isEmpty(list)) {
             return new ArrayList<>();
         }
         return list.stream().distinct().collect(Collectors.toList());
     }
 
-    public static <T> List<T> filter(List<T> list, Predicate<? super T> predicate) {
+    public static <T> List<T> filter(Collection<T> list, Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return new ArrayList<>();
         }
         return list.stream().filter(predicate).collect(Collectors.toList());
     }
 
-    public static <T, R> R reduce(List<T> list, R identity, BiFunction<R, ? super T, R> accumulator) {
+    public static <T, R> R reduce(Collection<T> list, R identity, BiFunction<R, ? super T, R> accumulator) {
         if (isEmpty(list)) {
             return identity;
         }
@@ -159,12 +159,12 @@ public final class Sugar {
         return result;
     }
 
-    public static <T, K> Map<K, T> toMap(List<T> list, Function<? super T, ? extends K> keyExtractor) {
+    public static <T, K> Map<K, T> toMap(Collection<T> list, Function<? super T, ? extends K> keyExtractor) {
         Objects.requireNonNull(keyExtractor);
         return toMap(list, keyExtractor, Function.identity());
     }
 
-    public static <T, K, V> Map<K, V> toMap(List<T> list,
+    public static <T, K, V> Map<K, V> toMap(Collection<T> list,
                                             Function<? super T, ? extends K> keyExtractor,
                                             Function<? super T, ? extends V> valueExtractor) {
         if (isEmpty(list)) {
@@ -175,7 +175,7 @@ public final class Sugar {
         return list.stream().collect(Collectors.toMap(keyExtractor, valueExtractor));
     }
 
-    public static <T, K> Map<K, List<T>> groupToMap(List<T> list, Function<? super T, ? extends K> keyExtractor) {
+    public static <T, K> Map<K, List<T>> groupToMap(Collection<T> list, Function<? super T, ? extends K> keyExtractor) {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
@@ -183,7 +183,7 @@ public final class Sugar {
         return list.stream().collect(Collectors.groupingBy(keyExtractor));
     }
 
-    public static <T, K, V> Map<K, List<V>> groupToMap(List<T> list,
+    public static <T, K, V> Map<K, List<V>> groupToMap(Collection<T> list,
                                                        Function<? super T, ? extends K> keyExtractor,
                                                        Function<? super T, ? extends V> valueExtractor) {
         if (isEmpty(list)) {
@@ -195,7 +195,7 @@ public final class Sugar {
                 Collectors.groupingBy(keyExtractor, Collectors.mapping(valueExtractor, Collectors.toList())));
     }
 
-    public static <T> boolean includes(List<T> list, Predicate<? super T> predicate) {
+    public static <T> boolean includes(Collection<T> list, Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return false;
         }

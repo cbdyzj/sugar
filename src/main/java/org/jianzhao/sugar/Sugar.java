@@ -72,6 +72,7 @@ public final class Sugar {
     }
 
     public static <T> List<T> toList(Iterable<T> iterable) {
+        Objects.requireNonNull(iterable);
         List<T> list = new ArrayList<>();
         iterable.forEach(list::add);
         return list;

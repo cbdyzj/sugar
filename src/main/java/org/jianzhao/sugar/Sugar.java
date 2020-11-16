@@ -1,7 +1,8 @@
 package org.jianzhao.sugar;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
 import java.lang.reflect.Array;
@@ -32,78 +33,80 @@ public final class Sugar {
         System.out.printf(format, args);
     }
 
-    @SneakyThrows
-    public static <T> void with(T target, @NonNull CTE<T> block) {
+    public static <T> void with(T target, @NotNull CTE<T> block) {
         if (target == null) {
             return;
         }
-        block.invoke(target);
+        invoke(() -> block.invoke(target));
     }
 
-    @SneakyThrows
-    public static <T extends Closeable> void use(T t, @NonNull ATE block) {
-        try (T _t = t) {
-            block.invoke();
-        }
+    public static <T extends Closeable> void use(T t, @NotNull ATE block) {
+        invoke(() -> {
+            try (T _t = t) {
+                block.invoke();
+            }
+        });
     }
 
-    @SneakyThrows
-    public static <T1 extends Closeable, T2 extends Closeable> void use(T1 t1, T2 t2, @NonNull ATE block) {
-        try (T1 _t1 = t1; T2 _t2 = t2) {
-            block.invoke();
-        }
+    public static <T1 extends Closeable, T2 extends Closeable> void use(T1 t1, T2 t2, @NotNull ATE block) {
+        invoke(() -> {
+            try (T1 _t1 = t1; T2 _t2 = t2) {
+                block.invoke();
+            }
+        });
     }
 
-    @SneakyThrows
-    public static <L extends Lock> void use(L l, @NonNull ATE block) {
+    public static <L extends Lock> void use(L l, @NotNull ATE block) {
         l.lock();
         try {
-            block.invoke();
+            invoke(block);
         } finally {
             l.unlock();
         }
     }
 
-    public static boolean isEmpty(Collection<?> collection) {
+    @Contract(value = "null -> true", pure = true)
+    public static boolean isEmpty(@Nullable Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
-    public static <T> List<T> toList(@NonNull Iterable<T> iterable) {
+
+    public static <T> List<T> toList(@NotNull Iterable<T> iterable) {
         List<T> list = new ArrayList<>();
         iterable.forEach(list::add);
         return list;
     }
 
-    public static <T, R> List<R> map(Collection<T> list, @NonNull Function<? super T, ? extends R> mapper) {
+    public static <T, R> List<R> map(Collection<T> list, @NotNull Function<? super T, ? extends R> mapper) {
         if (isEmpty(list)) {
             return new ArrayList<>();
         }
         return list.stream().map(mapper).collect(Collectors.toList());
     }
 
-    public static <T> void forEach(Collection<T> list, @NonNull Consumer<? super T> action) {
+    public static <T> void forEach(Collection<T> list, @NotNull Consumer<? super T> action) {
         if (isEmpty(list)) {
             return;
         }
         list.forEach(action);
     }
 
-    public static <T> T findFirst(Collection<T> list, @NonNull Predicate<? super T> predicate) {
+    public static <T> @Nullable T findFirst(@Nullable Collection<T> list, @NotNull Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return null;
         }
-        Optional<T> ot = list.stream().filter(predicate).findFirst();
+        var ot = list.stream().filter(predicate).findFirst();
         return ot.orElse(null);
     }
 
-    public static <T> boolean every(Collection<T> list, @NonNull Predicate<? super T> predicate) {
+    public static <T> boolean every(@Nullable Collection<T> list, @NotNull Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return false;
         }
         return list.stream().allMatch(predicate);
     }
 
-    public static <T> List<T> distinct(Collection<T> list, @NonNull Function<? super T, ?> keyExtractor) {
+    public static <T> List<T> distinct(Collection<T> list, @NotNull Function<? super T, ?> keyExtractor) {
         Set<Object> seen = new HashSet<>();
         return filter(list, t -> {
             Object key = keyExtractor.apply(t);
@@ -122,14 +125,14 @@ public final class Sugar {
         return list.stream().distinct().collect(Collectors.toList());
     }
 
-    public static <T> List<T> filter(Collection<T> list, @NonNull Predicate<? super T> predicate) {
+    public static <T> List<T> filter(Collection<T> list, @NotNull Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return new ArrayList<>();
         }
         return list.stream().filter(predicate).collect(Collectors.toList());
     }
 
-    public static <T, R> R reduce(Collection<T> list, @NonNull R identity, @NonNull BiFunction<R, ? super T, R> accumulator) {
+    public static <T, R> @NotNull R reduce(@Nullable Collection<T> list, @NotNull R identity, @NotNull BiFunction<R, ? super T, R> accumulator) {
         if (isEmpty(list)) {
             return identity;
         }
@@ -155,20 +158,20 @@ public final class Sugar {
         return result;
     }
 
-    public static <T, K> Map<K, T> toMap(Collection<T> list, @NonNull Function<? super T, ? extends K> keyExtractor) {
+    public static <T, K> Map<K, T> toMap(Collection<T> list, @NotNull Function<? super T, ? extends K> keyExtractor) {
         return toMap(list, keyExtractor, Function.identity());
     }
 
     public static <T, K, V> Map<K, V> toMap(Collection<T> list,
-                                            @NonNull Function<? super T, ? extends K> keyExtractor,
-                                            @NonNull Function<? super T, ? extends V> valueExtractor) {
+                                            @NotNull Function<? super T, ? extends K> keyExtractor,
+                                            @NotNull Function<? super T, ? extends V> valueExtractor) {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
         return list.stream().collect(Collectors.toMap(keyExtractor, valueExtractor));
     }
 
-    public static <T, K> Map<K, List<T>> groupToMap(Collection<T> list, @NonNull Function<? super T, ? extends K> keyExtractor) {
+    public static <T, K> Map<K, List<T>> groupToMap(Collection<T> list, @NotNull Function<? super T, ? extends K> keyExtractor) {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
@@ -176,8 +179,8 @@ public final class Sugar {
     }
 
     public static <T, K, V> Map<K, List<V>> groupToMap(Collection<T> list,
-                                                       @NonNull Function<? super T, ? extends K> keyExtractor,
-                                                       @NonNull Function<? super T, ? extends V> valueExtractor) {
+                                                       @NotNull Function<? super T, ? extends K> keyExtractor,
+                                                       @NotNull Function<? super T, ? extends V> valueExtractor) {
         if (isEmpty(list)) {
             return new HashMap<>();
         }
@@ -185,7 +188,7 @@ public final class Sugar {
                 Collectors.groupingBy(keyExtractor, Collectors.mapping(valueExtractor, Collectors.toList())));
     }
 
-    public static <T> boolean includes(Collection<T> list, @NonNull Predicate<? super T> predicate) {
+    public static <T> boolean includes(Collection<T> list, @NotNull Predicate<? super T> predicate) {
         if (isEmpty(list)) {
             return false;
         }
@@ -303,7 +306,7 @@ public final class Sugar {
         return cast(map);
     }
 
-    public static <T> T[] ref(@NonNull T t) {
+    public static <T> T[] ref(@NotNull T t) {
         T[] ref = cast(Array.newInstance(t.getClass(), 1));
         ref[0] = t;
         return ref;
@@ -323,7 +326,7 @@ public final class Sugar {
      */
     public interface ATE {
 
-        void invoke() throws Exception;
+        void invoke() throws Throwable;
     }
 
     /**
@@ -331,16 +334,23 @@ public final class Sugar {
      */
     public interface CTE<T> {
 
-        void invoke(T target) throws Exception;
+        void invoke(T target) throws Throwable;
     }
 
-    @SneakyThrows
-    public static void repeat(int times, @NonNull ATE block) {
+    public static void repeat(int times, @NotNull ATE block) {
         if (times <= 0) {
             throw new IllegalArgumentException("times requires positive integer");
         }
         for (int i = 0; i < times; i++) {
-            block.invoke();
+            invoke(block);
+        }
+    }
+
+    private static void invoke(ATE ate) {
+        try {
+            ate.invoke();
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
         }
     }
 }

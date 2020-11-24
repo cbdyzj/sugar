@@ -95,7 +95,7 @@ public final class Sugar {
         if (isEmpty(list)) {
             return null;
         }
-        var ot = list.stream().filter(predicate).findFirst();
+        Optional<T> ot = list.stream().filter(predicate).findFirst();
         return ot.orElse(null);
     }
 

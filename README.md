@@ -11,5 +11,5 @@
 println("hello world");
 ```
 
-- JDK 11 required
+- JDK 8 required
 - 使用参考：[SugarTest](https://github.com/cbdyzj/sugar/blob/master/src/test/java/org/jianzhao/sugar/SugarTest.java)

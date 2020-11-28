@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
  * @author cbdyzj
  * @since 2020.8.4
  */
-public final class Sugar {
+public class Sugar {
 
-    private Sugar() {
+    Sugar() {
     }
 
     public static void println(Object o) {
